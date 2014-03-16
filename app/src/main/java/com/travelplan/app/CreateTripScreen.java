@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,12 +25,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.BatchUpdateException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CreateTripScreen extends ActionBarActivity implements View.OnClickListener {
 
-    EditText editText;
+    EditText txtDestination;
     TextView txtCreatedTravelList;
+    DatePicker datePickerFrom;
+    DatePicker datePickerTo;
     private final String FILENAME= "TravelList.txt";
     int count=0;
 
@@ -44,9 +48,9 @@ public class CreateTripScreen extends ActionBarActivity implements View.OnClickL
             Button btnShowTravelLists=(Button)findViewById(R.id.btnShowTravelLists);
             btnShowTravelLists.setOnClickListener(this);
 
-            editText=(EditText)findViewById(R.id.textDestination);
-            DatePicker datePickerFrom=(DatePicker)findViewById(R.id.datePickerFrom);
-            DatePicker datePickerTo= (DatePicker)findViewById(R.id.datePickerTo);
+            txtDestination=(EditText)findViewById(R.id.textDestination);
+            datePickerFrom=(DatePicker)findViewById(R.id.datePickerFrom);
+            datePickerTo= (DatePicker)findViewById(R.id.datePickerTo);
 
             txtCreatedTravelList=(TextView)findViewById(R.id.txtCreatedTravelList);
 
@@ -105,26 +109,8 @@ public class CreateTripScreen extends ActionBarActivity implements View.OnClickL
             public void onClick(DialogInterface dialog, int id) {
 
                 try {
-
-                    //saveToTextFile(editText.getText().toString());
-                    Toast.makeText(getApplicationContext(),"The list - "+editText.getText()+" - created!",Toast.LENGTH_SHORT).show();
-                    //txtCreatedTravelList.setText("NO: "+count);
-                    try {
-                        File root = getFilesDir();
-                        Log.v("TEST","FILEDIR--->"+root.toString());
-                        if (root.canWrite()){
-                            File f = new File(root, "test.txt");
-
-                            boolean filestat = f.createNewFile();
-                            Log.v("TEST"," CREATE FILE =>"+ filestat);
-
-                            FileWriter fw = new FileWriter(f);
-                            BufferedWriter out = new BufferedWriter(fw);
-                            out.write("Hello world");
-                            out.close();
-                        }
-                    } catch (IOException e) {
-                    }
+                    addTextToFile(txtDestination.getText().toString());
+                    Toast.makeText(getApplicationContext(),"The item - "+txtDestination.getText()+" - has been added to text file!",Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -140,26 +126,40 @@ public class CreateTripScreen extends ActionBarActivity implements View.OnClickL
 
     }
 
-    private void saveToTextFile(String data) throws FileNotFoundException {
-        File fileDir = getFilesDir();
-        String filedir=fileDir.toString();
-        Log.v("TEST","FILEDIR--->"+filedir);
-
-        File newFile=new File(getFilesDir() + "/TravelList.txt");
-        try
+    public void addTextToFile(String text) {
+        if (android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED))
         {
-            boolean filestat = newFile.createNewFile();
-            Log.v("TEST"," CREATE FILE =>"+ filestat);
-            if(newFile.exists())
-            {
-                //FileOutputStream fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);
-                FileOutputStream fos = new FileOutputStream(newFile.getAbsolutePath());
-                fos.write(data.getBytes());
-                fos.close();
-                count++;
+            Log.e("External Storage Status: -> ","OK! <-");
+
+            File dir=new File(Environment.getExternalStorageDirectory()+"/TravelPlan");
+            dir.mkdirs();
+            File textFile = new File(dir+"/TravelLists.txt");
+            if (!textFile.exists()) {
+                try {
+                    textFile.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        } catch (IOException e) {
-            Log.e("Controller", e.getMessage() + e.getLocalizedMessage() + e.getCause());
+            try {
+                BufferedWriter buf = new BufferedWriter(new FileWriter(textFile, true));
+                buf.append(text.toUpperCase()+" --- From: "+ DateSet(datePickerFrom)+" - To: "+DateSet(datePickerTo));
+                buf.newLine();
+                buf.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        else
+        {
+            Log.e("External Storage Status: -> ","Failed! <-");
+        }
+    }
+
+    public String DateSet(DatePicker date)
+    {
+        String editedDate;
+        editedDate=date.getMonth()+"."+date.getDayOfMonth()+"."+date.getYear();
+        return editedDate;
     }
 }

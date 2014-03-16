@@ -6,6 +6,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,6 +19,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -61,58 +66,26 @@ public class TravelList extends Activity  {
         });*/
     }
 
-    public final String FILENAME= "TravelList.txt";
     int count=0;
     private void loadFromFile(){
 
-        String line=null;
-        String res = null;
-
+        File sdcard = new File(Environment.getExternalStorageDirectory()+"/TravelPlan");
+        File file = new File(sdcard,"/TravelLists.txt");
+        StringBuilder text = new StringBuilder();
         try {
-            InputStream in = openFileInput(FILENAME);
-            if (in != null) {
-                InputStreamReader input = new InputStreamReader(in);
-                BufferedReader buffReader = new BufferedReader(input);
-                res = "";
-                while (( line = buffReader.readLine()) != null) {
-                    res += line;
-                    txtView.setText("NO "+count );
-                    values[count]=line;
-                    count++;
-                }
-                for (int i = 0; i < values.length; ++i) {
-                    list.add(values[i]);
-                }
-                in.close();
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
 
-                //Toast.makeText(getApplicationContext(), "File Data == " + res, Toast.LENGTH_SHORT).show();
-            }else{
-           /* Do something*/
+            while ((line = br.readLine()) != null) {
+                text.append(line);
+                text.append('\n');
+                list.add(line);
             }
-        } catch(Exception e){
-            Toast.makeText(getApplicationContext(),e.toString() +   e.getMessage(),Toast.LENGTH_LONG).show();
+        }
+        catch (IOException e) {
+            Toast.makeText(getApplicationContext(),e.toString(),Toast.LENGTH_LONG).show();
         }
     }
-
-    //public String[] ListItems = new String[]{};
-    /*private void PopulateDataToListView()
-    {
-
-        try
-        {
-            Resources ResFiles = getResources();
-            InputStream ReadDbFile = ResFiles.openRawResource(R.raw.travellist);
-            byte[] Bytes = new byte[ReadDbFile.available()];
-            ReadDbFile.read(Bytes);
-            String DbLines = new String(Bytes);
-            ListItems= new String[]{DbLines};
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,R.layout.activity_travel_list, R.id.listTravelLists, ListItems);
-            lstView.setAdapter(adapter);
-
-        }
-        catch (Exception e) {
-        }
-    }*/
 
     private class StableArrayAdapter extends ArrayAdapter<String> {
 

@@ -3,12 +3,19 @@ package com.travelplan.app;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.DataOutputStream;
 
 public class PlacesScreen extends ActionBarActivity implements View.OnClickListener{
+    TextView txtSelectedPlace;
+    TextView txtSelectedPlaceDesc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +30,22 @@ public class PlacesScreen extends ActionBarActivity implements View.OnClickListe
 
         Button btnTravelListScreen=(Button)findViewById(R.id.btnTravelList);
         btnTravelListScreen.setOnClickListener(this);
+
+        txtSelectedPlace=(TextView) findViewById(R.id.txtSelectedPlace);
+        txtSelectedPlaceDesc=(TextView)findViewById(R.id.txtSelectedPlaceDesc);
+
+        try
+        {
+            Intent intent = getIntent();
+            String selectedPlace = intent.getStringExtra("selectedPlace");
+            String selectedPlaceDesc = intent.getStringExtra("Desc");
+            txtSelectedPlace.setText(selectedPlace);
+            txtSelectedPlaceDesc.setText(selectedPlaceDesc);
+        }
+        catch (Exception e)
+        {
+            Log.e("Error",e.toString());
+        }
     }
 
 

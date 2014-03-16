@@ -6,6 +6,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,7 +30,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        EditText textViewSearch = (EditText)findViewById(R.id.textViewSearch);
 
         Button btnCreateTrip= (Button) findViewById(R.id.btnCreateTrip);
         btnCreateTrip.setOnClickListener(this);
@@ -131,10 +131,20 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     private void btnSearchClicked(){
         if (placeSelectedFromString==true)
         {
-            startActivity(new Intent("com.travelplan.app.PlacesScreen"));
-            /*Intent i=new Intent(autoComp.getContext(),PlacesScreen.class);
-            i.putExtra("selectedPlace",autoComp.getText().toString());
-            startActivity(i);*/
+            try
+            {
+                Intent i=new Intent(autoComp.getContext(),PlacesScreen.class);
+                i.putExtra("selectedPlace",autoComp.getText().toString());
+                ///////// Description will be added
+                i.putExtra("Desc",getResources().getString(R.string.desc_noinfo));
+
+                i.setType("text/plain");
+                startActivity(i);
+            }
+            catch (Exception e)
+            {
+                Log.e("Error ->>>", e.toString());
+            }
         }
         else if(placeSelectedFromString==false)
         {

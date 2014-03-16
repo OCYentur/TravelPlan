@@ -55,6 +55,21 @@
             android:id="@+id/txtSelectedPlace"
             android:layout_gravity="left|top"
             android:hint="Selected Place" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="335dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/txtSelectedPlaceDesc"
+            android:layout_gravity="left|center_vertical"
+            android:textColor="#ffffff"
+            android:hint="Selected Place Description" />
+
+        <ImageView
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:id="@+id/imgSelectedPlace"
+            android:layout_gravity="right|top" />
     </FrameLayout>
 
 </RelativeLayout>
