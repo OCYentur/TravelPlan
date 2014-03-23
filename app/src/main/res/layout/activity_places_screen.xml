@@ -72,4 +72,14 @@
             android:layout_gravity="right|top" />
     </FrameLayout>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtSelectedTravelList"
+        android:layout_alignTop="@+id/btnGetDirection"
+        android:layout_alignRight="@+id/frameLyt_PlaceDescription"
+        android:layout_alignEnd="@+id/frameLyt_PlaceDescription"
+        android:hint="selected travel list"
+        android:visibility="invisible" />
+
 </RelativeLayout>

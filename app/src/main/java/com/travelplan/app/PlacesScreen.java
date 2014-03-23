@@ -1,22 +1,39 @@
 package com.travelplan.app;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.DataOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class PlacesScreen extends ActionBarActivity implements View.OnClickListener{
     TextView txtSelectedPlace;
     TextView txtSelectedPlaceDesc;
-
+    TextView selectedList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +50,7 @@ public class PlacesScreen extends ActionBarActivity implements View.OnClickListe
 
         txtSelectedPlace=(TextView) findViewById(R.id.txtSelectedPlace);
         txtSelectedPlaceDesc=(TextView)findViewById(R.id.txtSelectedPlaceDesc);
+        selectedList=(TextView)findViewById(R.id.txtSelectedTravelList);
 
         try
         {
@@ -47,7 +65,6 @@ public class PlacesScreen extends ActionBarActivity implements View.OnClickListe
             Log.e("Error",e.toString());
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -94,8 +111,105 @@ public class PlacesScreen extends ActionBarActivity implements View.OnClickListe
         startActivity(new Intent("com.travelplan.app.MainActivity"));
     }
 
+    final ArrayList<String> list = new ArrayList<String>();
+    ListView lstViewCreatedTravelLists;
+    String selectedTravelList;
+
     private void btnAddTravelList()
     {
-        startActivity(new Intent("com.travelplan.app.TravelList"));
+        lstViewCreatedTravelLists=new ListView(this);
+
+        list.clear();
+
+        loadFromFile();
+        AlertDialog.Builder builder = new AlertDialog.Builder(PlacesScreen.this);
+
+
+        final StableArrayAdapter adapter = new StableArrayAdapter(this,android.R.layout.simple_list_item_1, list);
+        lstViewCreatedTravelLists.setAdapter(adapter);
+        builder.setTitle("Choose a travel list")
+               .setView(lstViewCreatedTravelLists);
+
+        lstViewCreatedTravelLists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                // Add the place to the selected list
+                selectedTravelList=lstViewCreatedTravelLists.getItemAtPosition(i).toString();
+                String[] splittedTravelList=selectedTravelList.split("-");
+                selectedList.setText(splittedTravelList[0].trim().toString());
+                addPlaceToSelectedTravelList(txtSelectedPlace.getText().toString(),selectedList.getText().toString());
+                Toast.makeText(getApplicationContext(),"Place has been added to the list "+selectedList.getText().toString()+"!",Toast.LENGTH_SHORT).show();
+                PlacesScreen.this.finish();
+            }
+        });
+        final Dialog dialog=builder.create();
+        dialog.show();
+    }
+
+    private void loadFromFile(){
+
+        File sdcard = new File(Environment.getExternalStorageDirectory()+"/TravelPlan");
+        File file = new File(sdcard,"/TravelLists.txt");
+        StringBuilder text = new StringBuilder();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                text.append(line);
+                text.append('\n');
+                list.add(line);
+            }
+        }
+        catch (IOException e) {
+            Toast.makeText(getApplicationContext(),e.toString(),Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void addPlaceToSelectedTravelList(String place, String travelList) {
+        if (android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED))
+        {
+            Log.e("External Storage Status: -> ","OK! <-");
+
+            File dir=new File(Environment.getExternalStorageDirectory()+"/TravelPlan");
+            dir.mkdirs();
+            File textFile = new File(dir+"/"+travelList+".txt");
+            try {
+                BufferedWriter buf = new BufferedWriter(new FileWriter(textFile, true));
+                buf.append(place.toUpperCase());
+                buf.newLine();
+                buf.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else
+        {
+            Log.e("External Storage Status: -> ","Failed! <-");
+        }
+    }
+
+    private class StableArrayAdapter extends ArrayAdapter<String> {
+
+        HashMap<String, Integer> mIdMap = new HashMap<String, Integer>();
+
+        public StableArrayAdapter(Context context, int textViewResourceId, List<String> objects) {
+            super(context, textViewResourceId, objects);
+            for (int i = 0; i < objects.size(); ++i) {
+                mIdMap.put(objects.get(i), i);
+            }
+        }
+
+        @Override
+        public long getItemId(int position) {
+            String item = getItem(position);
+            return mIdMap.get(item);
+        }
+
+        @Override
+        public boolean hasStableIds() {
+            return true;
+        }
+
     }
 }

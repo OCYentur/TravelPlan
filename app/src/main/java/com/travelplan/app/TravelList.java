@@ -5,6 +5,7 @@ import android.app.Activity;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -14,10 +15,14 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ExpandableListView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.travelplan.expandListView.Adapter.ExpandListAdapter;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -30,21 +35,28 @@ import java.util.List;
 
 
 public class TravelList extends Activity  {
-    TextView txtView;
-    String[] values = new String[] { };
-    final ArrayList<String> list = new ArrayList<String>();
+
+    private ExpandListAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_travel_list);
+        try
+        {
+            final ExpandableListView lstView=(ExpandableListView)findViewById(R.id.expListTravelLists);
 
-        final ListView lstView=(ListView)findViewById(R.id.listTravelLists);
-        txtView=(TextView)findViewById(R.id.txtShowResults);
+            loadFromFile();
 
-        loadFromFile();
+            //final StableArrayAdapter adapter = new StableArrayAdapter(this,android.R.layout.simple_list_item_1, list);
+            adapter=new ExpandListAdapter(TravelList.this,list);
 
-        final StableArrayAdapter adapter = new StableArrayAdapter(this,android.R.layout.simple_list_item_1, list);
-        lstView.setAdapter(adapter);
+            lstView.setAdapter(adapter);
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(getApplicationContext(),"Error: "+e.toString(),Toast.LENGTH_SHORT).show();
+        }
 
         /*lstView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -66,28 +78,81 @@ public class TravelList extends Activity  {
         });*/
     }
 
-    int count=0;
-    private void loadFromFile(){
+    final ArrayList<ExpandListGroup> list = new ArrayList<ExpandListGroup>();
 
-        File sdcard = new File(Environment.getExternalStorageDirectory()+"/TravelPlan");
-        File file = new File(sdcard,"/TravelLists.txt");
-        StringBuilder text = new StringBuilder();
+    File sdcard = new File(Environment.getExternalStorageDirectory()+"/TravelPlan");
+    ExpandListGroup group;
+    ExpandListChild child;
+
+    private void loadFromFile(){
         try {
+            File file = new File(sdcard,"/TravelLists.txt");
+            StringBuilder text = new StringBuilder();
+
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
 
             while ((line = br.readLine()) != null) {
+                group=new ExpandListGroup();
+
+                String[] splittedLine=line.split("-");
+
                 text.append(line);
                 text.append('\n');
-                list.add(line);
+
+                group.setName(splittedLine[0]);
+
+                getPlacesFromATravelList(splittedLine[0]);
+
+                list.add(group);
             }
         }
-        catch (IOException e) {
+        catch (Exception e) {
             Toast.makeText(getApplicationContext(),e.toString(),Toast.LENGTH_LONG).show();
         }
     }
 
-    private class StableArrayAdapter extends ArrayAdapter<String> {
+    ///////////////////////////////////////////// Function for getting place names for every single Travel List
+
+    private void getPlacesFromATravelList(String travelList)
+    {
+        try
+        {
+            File file2 = new File(sdcard,"/"+travelList+".txt");
+            StringBuilder placesText = new StringBuilder();
+
+            BufferedReader br = new BufferedReader(new FileReader(file2));
+            String line;
+            if(file2.length()==0)
+            {
+                child=new ExpandListChild();
+                ArrayList<ExpandListChild> childList=new ArrayList<ExpandListChild>();
+                group.setItems(childList);
+            }
+            else
+            {
+            while ((line = br.readLine()) != null) {
+
+                child=new ExpandListChild();
+                ArrayList<ExpandListChild> childList=new ArrayList<ExpandListChild>();
+                placesText.append(line);
+                placesText.append('\n');
+
+                child.setName(line);
+                childList.add(child);
+
+                group.setItems(childList);
+            }
+            }
+        }
+        catch(Exception e)
+        {
+            Toast.makeText(getApplicationContext(),e.toString(),Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    /*private class StableArrayAdapter extends ArrayAdapter<String> {
 
         HashMap<String, Integer> mIdMap = new HashMap<String, Integer>();
 
@@ -109,5 +174,5 @@ public class TravelList extends Activity  {
             return true;
         }
 
-    }
+    }*/
 }

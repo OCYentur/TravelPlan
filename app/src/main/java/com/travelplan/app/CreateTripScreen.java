@@ -34,7 +34,6 @@ public class CreateTripScreen extends ActionBarActivity implements View.OnClickL
     TextView txtCreatedTravelList;
     DatePicker datePickerFrom;
     DatePicker datePickerTo;
-    private final String FILENAME= "TravelList.txt";
     int count=0;
 
     @Override
@@ -110,7 +109,8 @@ public class CreateTripScreen extends ActionBarActivity implements View.OnClickL
 
                 try {
                     addTextToFile(txtDestination.getText().toString());
-                    Toast.makeText(getApplicationContext(),"The item - "+txtDestination.getText()+" - has been added to text file!",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"The list - "+txtDestination.getText()+" - has been created!",Toast.LENGTH_SHORT).show();
+                    CreateTripScreen.this.finish();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -134,6 +134,7 @@ public class CreateTripScreen extends ActionBarActivity implements View.OnClickL
             File dir=new File(Environment.getExternalStorageDirectory()+"/TravelPlan");
             dir.mkdirs();
             File textFile = new File(dir+"/TravelLists.txt");
+            File textFile2 = new File(dir+"/"+text.toUpperCase()+".txt");
             if (!textFile.exists()) {
                 try {
                     textFile.createNewFile();
@@ -141,9 +142,16 @@ public class CreateTripScreen extends ActionBarActivity implements View.OnClickL
                     e.printStackTrace();
                 }
             }
+            if (!textFile2.exists()) {
+                try {
+                    textFile2.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             try {
                 BufferedWriter buf = new BufferedWriter(new FileWriter(textFile, true));
-                buf.append(text.toUpperCase()+" --- From: "+ DateSet(datePickerFrom)+" - To: "+DateSet(datePickerTo));
+                buf.append(text.toUpperCase()+"--- From: "+ setDate(datePickerFrom)+" - To: "+setDate(datePickerTo));
                 buf.newLine();
                 buf.close();
             } catch (IOException e) {
@@ -156,7 +164,7 @@ public class CreateTripScreen extends ActionBarActivity implements View.OnClickL
         }
     }
 
-    public String DateSet(DatePicker date)
+    public String setDate(DatePicker date)
     {
         String editedDate;
         editedDate=date.getMonth()+"."+date.getDayOfMonth()+"."+date.getYear();
