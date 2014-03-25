@@ -102,7 +102,7 @@ public class CreateTripScreen extends ActionBarActivity implements View.OnClickL
     private void btnCreateTripClicked() {
 
         new AlertDialog.Builder(this)
-        .setMessage(R.string.dialog_screen_message)
+        .setMessage(R.string.dialog_screen_message_create_travel_list)
         .setTitle(R.string.dialog_screen_title)
         .setPositiveButton(R.string.dialog_screen_yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -151,7 +151,7 @@ public class CreateTripScreen extends ActionBarActivity implements View.OnClickL
             }
             try {
                 BufferedWriter buf = new BufferedWriter(new FileWriter(textFile, true));
-                buf.append(text.toUpperCase()+"--- From: "+ setDate(datePickerFrom)+" - To: "+setDate(datePickerTo));
+                buf.append(text.toUpperCase());
                 buf.newLine();
                 buf.close();
             } catch (IOException e) {

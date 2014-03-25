@@ -156,9 +156,12 @@ public class PlacesScreen extends ActionBarActivity implements View.OnClickListe
             String line;
 
             while ((line = br.readLine()) != null) {
+
+                String[] splittedLine=line.split("-");
+
                 text.append(line);
                 text.append('\n');
-                list.add(line);
+                list.add(splittedLine[0]);
             }
         }
         catch (IOException e) {
