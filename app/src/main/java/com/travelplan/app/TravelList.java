@@ -9,11 +9,13 @@ import android.os.Environment;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.travelplan.expandListView.Adapter.ExpandListAdapter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -39,7 +41,8 @@ public class TravelList extends Activity  {
             adapter=new ExpandListAdapter(TravelList.this,groupList);
 
             lstView.setAdapter(adapter);
-            // This listener will start if the user long presses to a group (Travel List) in expandableListView
+
+            ////////////////// Remove Travel List permanently from device when long-clicked
             lstView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
                 @Override
                 public boolean onItemLongClick(AdapterView<?> adapterView, View view,final int i, long l) {
@@ -53,30 +56,31 @@ public class TravelList extends Activity  {
                                 // If the button "Yes" clicked, this function will start
                                 public void onClick(DialogInterface dialog, int id)
                                 {
-                                    File file = new File(sdcard,"/TravelLists.txt");
                                     StringBuilder text = new StringBuilder();
                                     BufferedReader br = null;
-                                    String[] splittedLine={};
+
                                     try {
+                                        File file = new File(sdcard,"/TravelLists.txt");
                                         br = new BufferedReader(new FileReader(file));
                                         String line;
+
                                         // Searching all the travel lists inside TravelLists.txt
                                         while ((line = br.readLine()) != null)
                                         {
-                                            splittedLine=line.split("-");
-                                            // If the clicked travel list is found, "if statement" will start
-                                            if (splittedLine[0].contains(groupList.get(i).getName()))
+                                            if (line.contains(groupList.get(i).getName()))
                                             {
                                                 //Toast.makeText(getApplicationContext(),"Array Size: "+groupList.size(),Toast.LENGTH_SHORT).show();
-
+                                                Toast.makeText(getApplicationContext(),"The travel list "+groupList.get(i).getName().toString()+" deleted from the device!",Toast.LENGTH_SHORT).show();
                                                 // THE KEY PART: Clicked travel list will be removed from the array list which holds the travel lists
                                                 groupList.remove(groupList.get(i));
                                                 // Existing TravelLists.txt deleted
                                                 file.delete();
+                                                // Delete the travellist.txt file
+                                                listWillBeDeleted.delete();
                                                 // An empty TravelLists.txt created - WARNING! Dates have not been set in this new txt file. CreateTravelList class needs to be called!!
                                                 file.createNewFile();
-                                                try {
-                                                    // TravelLists.txt will be filled with travel lists which comes from the array list until the size has been reached by "for statement"
+
+                                                    // TravelLists.txt will be filled with travel lists which comes from the array list until the size has been reached
                                                     for (int count=0;count<=groupList.size();++count)
                                                     {
                                                         BufferedWriter buf = new BufferedWriter(new FileWriter(file, true));
@@ -86,20 +90,11 @@ public class TravelList extends Activity  {
                                                         buf.close();
                                                         //Toast.makeText(getApplicationContext(),"Array Size: "+groupList.size(),Toast.LENGTH_SHORT).show();
                                                     }
-
-                                                } catch (IOException e) {
-                                                    e.printStackTrace();
-                                                }
-
                                             }
                                         }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
                                     }
-                                    // Delete the travellist.txt file
-                                    listWillBeDeleted.delete();
-                                    loadFromFile();
-                                    Toast.makeText(getApplicationContext(),"The travel list "+splittedLine[0].toString()+" deleted from the device!",Toast.LENGTH_SHORT).show();
+                                    catch (Exception e) { e.printStackTrace(); }
+                                    TravelList.this.finish();
                                 }
                             })
                             .setNegativeButton(R.string.dialog_screen_no, new DialogInterface.OnClickListener() {
@@ -110,6 +105,69 @@ public class TravelList extends Activity  {
                             .setIcon(R.drawable.ic_launcher)
                             .show();
 
+                    return false;
+                }
+            });
+
+            ////////////////// Remove Place from list when clicked
+            lstView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+                @Override
+                public boolean onChildClick(ExpandableListView expandableListView, View view,final int groupPos,final int childPos, long l) {
+
+                    final File travelList = new File(sdcard,"/"+groupList.get(groupPos).getName()+".txt");
+                    // Confirmation required to delete the place from list
+                    new AlertDialog.Builder(TravelList.this)
+                            .setMessage(R.string.dialog_screen_message_delete_place)
+                            .setTitle(R.string.dialog_screen_title)
+                            .setPositiveButton(R.string.dialog_screen_yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id)
+                                {
+                                    StringBuilder text = new StringBuilder();
+                                    BufferedReader br = null;
+
+                                    try {
+                                        String line;
+                                        br = new BufferedReader(new FileReader(travelList));
+                                        getPlacesFromATravelList(groupList.get(groupPos).getName());
+                                        //Toast.makeText(getApplicationContext(),"Current Array Size: "+childList.size(),Toast.LENGTH_SHORT).show();
+                                        // Searching all the places inside selected travel list
+                                        while ((line = br.readLine()) != null)
+                                        {
+                                            if (line.contains(childList.get(childPos).getName()))
+                                            {
+                                                Toast.makeText(getApplication(),"Place "+childList.get(childPos).getName().toString()+" position removed from array list",Toast.LENGTH_SHORT).show();
+
+                                                childList.remove(childList.get(childPos));
+
+                                                // Existing "travellistname".txt deleted
+                                                travelList.delete();
+                                                // An empty "travellistname".txt created
+                                                travelList.createNewFile();
+
+                                                // "travellistname".txt will be filled with places that come from the array list until the size has been reached
+                                                for (int count=0;count<=childList.size();++count)
+                                                {
+                                                    BufferedWriter buf = new BufferedWriter(new FileWriter(travelList, true));
+                                                    // Writing the place based on position in array list to txt file
+                                                    buf.append(childList.get(count).getName().toString());
+                                                    //Toast.makeText(getApplicationContext(),"Added Place: "+childList.get(count).getName().toString(),Toast.LENGTH_SHORT).show();
+                                                    buf.newLine();
+                                                    buf.close();
+                                                }
+                                            }
+                                        }
+                                       // Toast.makeText(getApplicationContext(),"New Array Size: "+childList.size(),Toast.LENGTH_SHORT).show();
+                                    }
+                                    catch (Exception e) { e.printStackTrace(); }
+                                    TravelList.this.finish();
+                                }
+                            })
+                            .setNegativeButton(R.string.dialog_screen_no, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                }
+                            })
+                            .setIcon(R.drawable.ic_launcher)
+                            .show();
                     return false;
                 }
             });
@@ -159,13 +217,11 @@ public class TravelList extends Activity  {
             while ((line = br.readLine()) != null) {
                 group=new ExpandListGroup();
 
-                String[] splittedLine=line.split("-");
-
                 text.append(line);
                 text.append('\n');
 
-                group.setName(splittedLine[0]);
-                getPlacesFromATravelList(splittedLine[0]);
+                group.setName(line);
+                getPlacesFromATravelList(line);
                 groupList.add(group);
             }
         }

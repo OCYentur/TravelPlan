@@ -109,7 +109,7 @@ public class CreateTripScreen extends ActionBarActivity implements View.OnClickL
 
                 try {
                     addTextToFile(txtDestination.getText().toString());
-                    Toast.makeText(getApplicationContext(),"The list - "+txtDestination.getText()+" - has been created!",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"The list - "+txtDestination.getText().toString().toUpperCase()+" - has been created!",Toast.LENGTH_SHORT).show();
                     CreateTripScreen.this.finish();
                 } catch (Exception e) {
                     e.printStackTrace();
